@@ -47,6 +47,8 @@ def reindex() -> ReindexResponse:
         indexed_chunks, documents_processed = rag.build_index()
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
     return ReindexResponse(
         indexed_chunks=indexed_chunks,
         documents_processed=documents_processed,

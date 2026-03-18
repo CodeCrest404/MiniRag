@@ -138,9 +138,26 @@ async function postJson(url, payload) {
     body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
+  const raw = await response.text();
+  let data = null;
+
+  if (raw) {
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      data = null;
+    }
+  }
+
   if (!response.ok) {
-    throw new Error(data.detail || "Request failed.");
+    const detail =
+      (data && (data.detail || data.message)) ||
+      raw ||
+      `Request failed with status ${response.status}.`;
+    throw new Error(detail);
+  }
+  if (!data) {
+    throw new Error("Server returned an empty response.");
   }
   return data;
 }
