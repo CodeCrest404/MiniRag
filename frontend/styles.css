@@ -1,0 +1,262 @@
+:root {
+  --bg: #f2efe8;
+  --surface: rgba(255, 252, 247, 0.92);
+  --surface-strong: #fffdf8;
+  --ink: #1b1a17;
+  --muted: #5f5a50;
+  --line: rgba(27, 26, 23, 0.12);
+  --accent: #b45f06;
+  --accent-soft: #f4d9b8;
+  --ok: #2f6b3c;
+  --shadow: 0 24px 60px rgba(35, 31, 24, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(180, 95, 6, 0.12), transparent 28%),
+    linear-gradient(135deg, #e8e1d6, var(--bg));
+}
+
+.shell {
+  width: min(1200px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 32px 0 40px;
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 20px;
+}
+
+.hero {
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.eyebrow,
+.status,
+code {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-size: 0.8rem;
+}
+
+.hero h1 {
+  margin: 0;
+  max-width: 12ch;
+  font-size: clamp(2.5rem, 6vw, 4.8rem);
+  line-height: 0.92;
+}
+
+.lede {
+  max-width: 52ch;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+  min-height: 0;
+}
+
+.chat-panel,
+.context-panel {
+  min-height: 0;
+  height: min(68vh, 820px);
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.chat-panel {
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+.context-panel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.messages,
+.context-list {
+  padding: 22px;
+  overflow: auto;
+  min-height: 0;
+}
+
+.message {
+  padding: 18px;
+  border-radius: 22px;
+  margin-bottom: 14px;
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+}
+
+.message.user {
+  background: #1f1c18;
+  color: #f7f2ea;
+}
+
+.message h2,
+.panel-header h2 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+}
+
+.message p,
+.context-card p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.message-body {
+  display: grid;
+  gap: 10px;
+}
+
+.message-body ul {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.6;
+}
+
+.message-body li + li {
+  margin-top: 8px;
+}
+
+.message-body .sources {
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.88rem;
+}
+
+.composer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 18px;
+  border-top: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.45);
+  position: sticky;
+  bottom: 0;
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 86px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  font: inherit;
+  background: var(--surface-strong);
+}
+
+button {
+  border: 0;
+  border-radius: 18px;
+  padding: 14px 18px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fffaf2;
+}
+
+button.secondary {
+  background: #1f1c18;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--ok);
+  background: rgba(47, 107, 60, 0.1);
+}
+
+.panel-header {
+  padding: 22px 22px 0;
+}
+
+.panel-header p,
+.empty,
+.meta {
+  color: var(--muted);
+}
+
+.context-card {
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  margin-bottom: 14px;
+}
+
+.meta {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.82rem;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+@media (max-width: 900px) {
+  .shell {
+    min-height: auto;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-panel,
+  .context-panel {
+    height: auto;
+    max-height: none;
+  }
+
+  .composer {
+    grid-template-columns: 1fr;
+    position: static;
+  }
+}

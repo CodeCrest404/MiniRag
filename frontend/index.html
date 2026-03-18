@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini RAG Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Construction Marketplace AI</p>
+        <h1>Grounded answers from your internal documents.</h1>
+        <p class="lede">
+          Ask a question, inspect the retrieved chunks, and verify exactly what
+          the model used.
+        </p>
+        <div class="actions">
+          <button id="reindexButton" class="secondary">Build Index</button>
+          <span id="statusPill" class="status">Waiting for documents</span>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="chat-panel">
+          <div id="messages" class="messages">
+            <article class="message assistant">
+              <h2>Assistant</h2>
+              <p>
+                Add the source files to <code>data/raw</code>, build the index,
+                and then ask about policies, FAQs, or specs.
+              </p>
+            </article>
+          </div>
+          <form id="chatForm" class="composer">
+            <label for="questionInput" class="sr-only">Question</label>
+            <textarea
+              id="questionInput"
+              rows="3"
+              placeholder="What factors affect construction project delays?"
+            ></textarea>
+            <button type="submit">Ask</button>
+          </form>
+        </div>
+
+        <aside class="context-panel">
+          <div class="panel-header">
+            <h2>Retrieved Context</h2>
+            <p>Chunks used for the final answer.</p>
+          </div>
+          <div id="contextList" class="context-list">
+            <p class="empty">No retrieval yet.</p>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
