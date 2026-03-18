@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
+DEFAULT_REINDEX_ENABLED = "false" if os.getenv("RENDER") else "true"
 
 
 class Settings(BaseSettings):
@@ -27,6 +29,10 @@ class Settings(BaseSettings):
     top_k: int = Field(default=4, alias="TOP_K")
     chunk_size: int = Field(default=900, alias="CHUNK_SIZE")
     chunk_overlap: int = Field(default=150, alias="CHUNK_OVERLAP")
+    reindex_enabled: bool = Field(
+        default=DEFAULT_REINDEX_ENABLED,
+        alias="REINDEX_ENABLED",
+    )
 
     raw_data_dir: Path = BASE_DIR / "data" / "raw"
     processed_data_dir: Path = BASE_DIR / "data" / "processed"

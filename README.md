@@ -99,6 +99,37 @@ Summarize those findings in this README for the final submission.
 
 The app serves the frontend directly from FastAPI, which keeps deployment simple for the assignment. You can deploy this to any platform that supports a Python web service.
 
+### Render
+
+For Render, do not use the local development command above as-is. Render requires the app to listen on `0.0.0.0` and on the port provided in the `PORT` environment variable.
+
+- Build command:
+
+```bash
+pip install -r requirements.txt
+```
+
+- Start command:
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+This repository includes a [`render.yaml`](C:\Users\Pranitha\OneDrive\Desktop\Assignment\render.yaml) with the correct settings.
+
+For stable deployment on smaller Render instances, build the FAISS index locally before deploy:
+
+```bash
+python scripts/build_index.py
+```
+
+That generates:
+
+- `data/processed/chunks.index`
+- `data/processed/chunks.json`
+
+Runtime reindexing is disabled by default on Render. The deployed service is intended to query a prebuilt index rather than rebuild embeddings in-process.
+
 ## Current Limitation
 
 The Google Drive assessment files referenced in the PDF are not bundled in this repository. The app is ready to ingest them once they are added to `data/raw/`.

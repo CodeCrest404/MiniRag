@@ -36,3 +36,8 @@ class ChatResponse(BaseModel):
 class ReindexResponse(BaseModel):
     indexed_chunks: int
     documents_processed: int
+
+
+class RuntimeInfo(BaseModel):
+    reindex_enabled: bool
+    index_available: bool

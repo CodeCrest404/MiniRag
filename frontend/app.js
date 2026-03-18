@@ -5,6 +5,16 @@ const contextList = document.getElementById("contextList");
 const statusPill = document.getElementById("statusPill");
 const reindexButton = document.getElementById("reindexButton");
 
+function setReindexEnabled(enabled) {
+  reindexButton.disabled = !enabled;
+  reindexButton.setAttribute("aria-disabled", String(!enabled));
+  if (!enabled) {
+    reindexButton.title = "Reindex is disabled in this environment.";
+  } else {
+    reindexButton.removeAttribute("title");
+  }
+}
+
 function appendInlineFormatting(container, text) {
   const segments = text.split(/(\*\*.*?\*\*)/g);
 
@@ -162,6 +172,27 @@ async function postJson(url, payload) {
   return data;
 }
 
+async function loadRuntimeInfo() {
+  try {
+    const response = await fetch("/api/runtime");
+    if (!response.ok) {
+      return;
+    }
+    const runtime = await response.json();
+    setReindexEnabled(runtime.reindex_enabled);
+
+    if (!runtime.reindex_enabled) {
+      statusPill.textContent = runtime.index_available
+        ? "Production mode: index loaded"
+        : "Production mode: index missing";
+    } else if (runtime.index_available) {
+      statusPill.textContent = "Index available";
+    }
+  } catch {
+    // Keep the UI usable even if runtime metadata fails to load.
+  }
+}
+
 chatForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const question = questionInput.value.trim();
@@ -199,3 +230,5 @@ reindexButton.addEventListener("click", async () => {
     statusPill.textContent = "Index failed";
   }
 });
+
+loadRuntimeInfo();

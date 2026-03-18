@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
-from app.models import ChatRequest, ChatResponse, ReindexResponse
+from app.models import ChatRequest, ChatResponse, ReindexResponse, RuntimeInfo
 from app.rag import load_rag
 
 settings = get_settings()
@@ -35,6 +35,14 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/api/runtime", response_model=RuntimeInfo)
+def runtime_info() -> RuntimeInfo:
+    return RuntimeInfo(
+        reindex_enabled=settings.reindex_enabled,
+        index_available=settings.index_path.exists() and settings.chunk_store_path.exists(),
+    )
+
+
 @lru_cache(maxsize=1)
 def get_rag():
     return load_rag()
@@ -42,6 +50,14 @@ def get_rag():
 
 @app.post("/api/reindex", response_model=ReindexResponse)
 def reindex() -> ReindexResponse:
+    if not settings.reindex_enabled:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Reindex is disabled in this environment. Build the FAISS index locally "
+                "and deploy the generated files in data/processed."
+            ),
+        )
     rag = get_rag()
     try:
         indexed_chunks, documents_processed = rag.build_index()
