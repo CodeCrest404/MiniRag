@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import faiss
-import numpy as np
 import requests
-from sentence_transformers import SentenceTransformer
+from collections import Counter
+from math import sqrt
 
 from app.config import get_settings
 from app.document_loader import chunk_documents, load_documents, load_saved_chunks, save_chunks
@@ -14,15 +13,12 @@ from app.prompts import SYSTEM_PROMPT, build_user_prompt
 class MiniRAG:
     def __init__(self) -> None:
         self.settings = get_settings()
-        self.embedder: SentenceTransformer | None = None
-        self.index: faiss.IndexFlatIP | None = None
         self.chunks: list[Chunk] = []
 
     def ensure_index(self) -> None:
-        if self.index is not None and self.chunks:
+        if self.chunks:
             return
-        if self.settings.index_path.exists():
-            self.index = faiss.read_index(str(self.settings.index_path))
+        if self.settings.chunk_store_path.exists():
             self.chunks = load_saved_chunks()
             if self.chunks:
                 return
@@ -36,31 +32,30 @@ class MiniRAG:
                 "No source documents found in data/raw. Add the assessment files first."
             )
 
-        embeddings = self._embed_texts([chunk.text for chunk in chunks])
-        index = faiss.IndexFlatIP(embeddings.shape[1])
-        index.add(embeddings)
-
         self.settings.processed_data_dir.mkdir(parents=True, exist_ok=True)
-        faiss.write_index(index, str(self.settings.index_path))
         save_chunks(chunks)
 
-        self.index = index
         self.chunks = chunks
         return len(chunks), len(documents)
 
     def retrieve(self, question: str, top_k: int | None = None) -> list[RetrievedChunk]:
         self.ensure_index()
-        assert self.index is not None
-
-        query_embedding = self._embed_texts([question])
         limit = top_k or self.settings.top_k
-        scores, indices = self.index.search(query_embedding, limit)
+        query_terms = self._tokenize(question)
+        if not query_terms:
+            return []
+
+        scored_chunks: list[tuple[float, Chunk]] = []
+        for chunk in self.chunks:
+            score = self._score_chunk(query_terms, chunk.text)
+            if score <= 0:
+                continue
+            scored_chunks.append((score, chunk))
+
+        scored_chunks.sort(key=lambda item: item[0], reverse=True)
 
         retrieved: list[RetrievedChunk] = []
-        for score, idx in zip(scores[0], indices[0], strict=False):
-            if idx < 0 or idx >= len(self.chunks):
-                continue
-            chunk = self.chunks[idx]
+        for score, chunk in scored_chunks[:limit]:
             retrieved.append(
                 RetrievedChunk(
                     chunk_id=chunk.chunk_id,
@@ -87,11 +82,28 @@ class MiniRAG:
         answer = self._generate_answer(question, contexts)
         return answer, contexts, model_used
 
-    def _embed_texts(self, texts: list[str]) -> np.ndarray:
-        if self.embedder is None:
-            self.embedder = SentenceTransformer(self.settings.embedding_model)
-        vectors = self.embedder.encode(texts, normalize_embeddings=True)
-        return np.asarray(vectors, dtype="float32")
+    def _tokenize(self, text: str) -> list[str]:
+        return [
+            token.strip(".,!?;:\"'()[]{}").lower()
+            for token in text.split()
+            if token.strip(".,!?;:\"'()[]{}")
+        ]
+
+    def _score_chunk(self, query_terms: list[str], chunk_text: str) -> float:
+        chunk_terms = self._tokenize(chunk_text)
+        if not chunk_terms:
+            return 0.0
+
+        query_counts = Counter(query_terms)
+        chunk_counts = Counter(chunk_terms)
+        overlap = 0.0
+        for term, count in query_counts.items():
+            overlap += min(count, chunk_counts.get(term, 0))
+
+        if overlap == 0:
+            return 0.0
+
+        return overlap / sqrt(len(query_terms) * len(chunk_terms))
 
     def _generate_answer(self, question: str, contexts: list[RetrievedChunk]) -> str:
         prompt = build_user_prompt(

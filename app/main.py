@@ -39,7 +39,7 @@ def health() -> dict[str, str]:
 def runtime_info() -> RuntimeInfo:
     return RuntimeInfo(
         reindex_enabled=settings.reindex_enabled,
-        index_available=settings.index_path.exists() and settings.chunk_store_path.exists(),
+        index_available=settings.chunk_store_path.exists(),
     )
 
 

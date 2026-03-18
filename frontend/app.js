@@ -6,11 +6,15 @@ const statusPill = document.getElementById("statusPill");
 const reindexButton = document.getElementById("reindexButton");
 
 function setReindexEnabled(enabled) {
-  reindexButton.disabled = !enabled;
-  reindexButton.setAttribute("aria-disabled", String(!enabled));
   if (!enabled) {
+    reindexButton.hidden = true;
+    reindexButton.disabled = true;
+    reindexButton.setAttribute("aria-disabled", "true");
     reindexButton.title = "Reindex is disabled in this environment.";
   } else {
+    reindexButton.hidden = false;
+    reindexButton.disabled = false;
+    reindexButton.setAttribute("aria-disabled", "false");
     reindexButton.removeAttribute("title");
   }
 }
