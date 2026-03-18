@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from functools import lru_cache
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,9 +12,7 @@ from app.config import get_settings
 from app.models import ChatRequest, ChatResponse, ReindexResponse
 from app.rag import load_rag
 
-
 settings = get_settings()
-rag = load_rag()
 
 
 @asynccontextmanager
@@ -36,8 +35,14 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@lru_cache(maxsize=1)
+def get_rag():
+    return load_rag()
+
+
 @app.post("/api/reindex", response_model=ReindexResponse)
 def reindex() -> ReindexResponse:
+    rag = get_rag()
     try:
         indexed_chunks, documents_processed = rag.build_index()
     except ValueError as exc:
@@ -53,6 +58,7 @@ def chat(payload: ChatRequest) -> ChatResponse:
     if not payload.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
 
+    rag = get_rag()
     try:
         answer, contexts, model_used = rag.answer(payload.question.strip())
     except ValueError as exc:

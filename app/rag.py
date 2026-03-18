@@ -14,7 +14,7 @@ from app.prompts import SYSTEM_PROMPT, build_user_prompt
 class MiniRAG:
     def __init__(self) -> None:
         self.settings = get_settings()
-        self.embedder = SentenceTransformer(self.settings.embedding_model)
+        self.embedder: SentenceTransformer | None = None
         self.index: faiss.IndexFlatIP | None = None
         self.chunks: list[Chunk] = []
 
@@ -88,6 +88,8 @@ class MiniRAG:
         return answer, contexts, model_used
 
     def _embed_texts(self, texts: list[str]) -> np.ndarray:
+        if self.embedder is None:
+            self.embedder = SentenceTransformer(self.settings.embedding_model)
         vectors = self.embedder.encode(texts, normalize_embeddings=True)
         return np.asarray(vectors, dtype="float32")
 
